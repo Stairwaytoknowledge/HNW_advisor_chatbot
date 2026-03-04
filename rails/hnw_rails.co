@@ -1,0 +1,66 @@
+# Quilter HNW Advisor — NeMo Guardrails
+# hnw_rails.co — HNW precision and citation enforcement
+# Colang 1.0 syntax
+
+# ── Output Rail: Block vague monetary language ─────────────────────────────
+
+define bot answer with vague monetary
+  "approximately £"
+  "roughly £"
+  "around £"
+  "about £"
+  "estimated £"
+  "circa £"
+
+define flow enforce precision
+  bot answer with vague monetary
+  execute route_to_precision_agent
+  execute log_precision_violation
+
+# ── Output Rail: Citations mandatory ──────────────────────────────────────
+
+define bot answer without citation
+  "regex: ^(?!.*\\[Source:).*charges.*£.*$"
+
+define flow enforce citation
+  bot answer without citation
+  execute request_citation_retry
+  execute log_missing_citation
+
+# ── Output Rail: Low faithfulness → human review ─────────────────────────
+
+define flow route low faithfulness
+  # Triggered programmatically by Python action hook when NLI score < 0.50
+  execute log_faithfulness_flag
+  execute route_to_human_review
+  bot respond with review notice
+
+# ── Input Rail: HNW fee query routing ────────────────────────────────────
+
+define user ask hnw fee query
+  "platform fee on £"
+  "platform charge on £"
+  "annual fee for £"
+  "what will I be charged on £"
+  "total charge on"
+
+define flow route hnw fee
+  user ask hnw fee query
+  execute route_to_crewai_hnw
+
+# ── Input Rail: HNW pension query routing ────────────────────────────────
+
+define user ask hnw pension query
+  "defined benefit"
+  "db pension"
+  "transfer value"
+  "mpaa"
+  "money purchase annual allowance"
+  "ufpls"
+  "uncrystallised funds"
+  "carry forward"
+  "annual allowance"
+
+define flow route hnw pension
+  user ask hnw pension query
+  execute route_to_crewai_hnw

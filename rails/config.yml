@@ -1,0 +1,29 @@
+# NeMo Guardrails configuration — Ollama backend
+# Compatible with nemoguardrails >= 0.9.0
+
+models:
+  - type: main
+    engine: ollama
+    model: qwen2.5:7b
+    parameters:
+      base_url: "http://localhost:11434"
+      temperature: 0.0
+      num_predict: 512
+
+rails:
+  input:
+    flows:
+      - handle out of scope
+      - block injection
+  output:
+    flows:
+      - enforce precision
+      - enforce citation
+
+instructions:
+  - type: general
+    content: |
+      You are a guardrail classifier for the Quilter HNW Advisor system.
+      Your job is to classify incoming queries and outgoing answers according
+      to the Colang rules defined in main.co and hnw_rails.co.
+      Always classify conservatively — when in doubt, flag for review.
